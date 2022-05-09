@@ -212,7 +212,7 @@
 \\\hline #4 \\\hline \endfirsthead
 \multicolumn{#5}{r}{\normalsize\@tablecontinuation{\thetable}} \\\hline #4 \endhead
 }{\end{longtable}}
-
+                    
 %% Библиография по ГОСТу. Используем только бибер.
 
 \RequirePackage[
@@ -373,7 +373,7 @@
   \counterwithout{lstlisting}{section}
   \counterwithout{lstlisting}{subsection}
 }
-
+     
 
 %% "Тонкая" настройка теховских штрафов при формировании абзацев.
 
@@ -1090,7 +1090,7 @@
     \begin{center}\bfseries{\normalsize\@strings@OBJECTIVES@first}\\\@strings@OBJECTIVES@second\end{center}
     \bigskip
     \begingroup\banhyphens
-    \noindent \textbf{\@strings@Student}~\theauthor\;\par
+    \noindent \textbf{\@strings@Student}~\theauthor\;\par 
     \noindent \textbf{\@strings@Group}~\thestudygroup\; \textbf{\@strings@FacultyOf}~\thefaculty\;\par
     \noindent \textbf{\@strings@DegreeLevel:} \@strings@DegreeName\par
     \noindent \textbf{\@strings@SubjectArea:} \thespecialty\par
@@ -1154,7 +1154,7 @@
         \providecommand{\@strings@DegreeName@en}{Master}
     }{
         \ifstrequal{#1}{Бакалавр}{
-            \providecommand{\thespecialization@ru}{Математические модели и алгоритмы в разработке программного обеспечения}
+            \providecommand{\thespecialization@ru}{Информатика и программирование 2018}
             \providecommand{\thespecialty@ru}{01.03.02~Прикладная математика и информатика}
             \providecommand{\thespecialization@en}{Mathematical models and algorithms in software engineering}
             \providecommand{\thespecialty@en}{01.03.02~Applied mathematics and informatics}
