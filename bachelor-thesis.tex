@@ -578,22 +578,7 @@ p.addEdgeProperty(new ArcLabelEdgeSubProperty<>("duration", arcLabel, MyArcLabel
 
 \section{Исполнитель запросов}\label{sec:executor}
 
-Для того чтобы предоставить пользователю возможность запускать Gremlin запросы на графе, был разработан класс \texttt{GremlinQueryExecutor}, принимающий в конструкторе экземпляр интерфейса \texttt{Graph} (подразумевается, что это будет объект класса \texttt{WebGraphGraph}), и предоставляющий набор методов для запуска запросов на этом графе. Базовым методом является метод \texttt{eval(String query)} (реализация представлена на листинге~\ref{lst:gremlin-eval}), делегирующий исполнение запроса классу \texttt{GremlinExecutor} из пакета \texttt{org.apache.tinkerpop.gremlin.groovy.engine}.
-
-\begin{lstlisting}[float=!h,caption={Реализация исполнителя Gremlin запросов},label={lst:gremlin-eval}]
-public GraphTraversal<?, ?> eval(String query) {
-    Bindings bindings = new SimpleBindings();
-    bindings.put("g", g.traversal());
-    try (GremlinExecutor ge =
-                 GremlinExecutor.build()
-                                .globalBindings(bindings)
-                                .create()) {
-        return (GraphTraversal<?, ?>) ge.eval(query, bindings).get();
-    } catch (Exception e) {
-        throw new RuntimeException(e);
-    }
-}
-\end{lstlisting}
+Для того чтобы предоставить пользователю возможность запускать Gremlin запросы на графе, был разработан класс \texttt{GremlinQueryExecutor}, принимающий в конструкторе экземпляр интерфейса \texttt{Graph} (подразумевается, что это будет объект класса \texttt{WebGraphGraph}), и предоставляющий набор методов для запуска запросов на этом графе. Базовым методом является метод \texttt{eval(String query)} (реализация представлена в приложении~\ref{lst:gremlin-eval}), делегирующий исполнение запроса классу \texttt{GremlinExecutor}, предоставляемому TinkerPop.
 
 Для удобства работы с результатами запросов были добавлены два вспомогательных метода. \texttt{print(String query)} выводит в консоль все результаты запроса по мере исполнения, а \texttt{get(String query)} возвращает список результатов для дальнейшего использования в программе.
 
@@ -649,32 +634,15 @@ try (var gremlinGraph = WebGraphGraph.open(myGraph, p, myGraph.getPath())) {
 Сервер Software Heritage уже имеет доступ к \texttt{BidirectionalImmutableGraph}, дополнительно обернутый в класс \texttt{SwhBidirectionalGraph}, поэтому для успешного использования библиотеки на том же сервере остается настроить использование свойств и получить экземпляр \texttt{WebGraphGraph} при помощи статического метода, описанного выше.
 
 Для настройки свойств использовался класс \texttt{StandardWebGraphPropertyProvider}. В качестве метки вершины использовался тип вершины, получаемый методом \texttt{getNodeType(long vertexId)} класса \texttt{SwhBidirectionalGraph}. Меток ребер (имеются в виду строковые метки TinkerPop, не метки ребер WebGraph) рассматриваемый домен не предусматривает. Для добавления свойства вершины \texttt{author\_timestamp} использовался класс \texttt{FileVertexProperty}. Также были добавлены два свойства вершины, не подходящие под стандартные техники, и напрямую предоставляемые классом \texttt{SwhBidirectionalGraph}. Для этого использовался класс \texttt{VertexProperty}.
-Для добавления свойства ребра был использован класс \texttt{ArcLabelEdgeProperty}, не требующий никаких настроек, достаточно предоставить \texttt{ArcLabelledImmutableGraph}. Также было добавлено дополнительное свойство поверх свойства ребра, конвертирующее набор файлов, связанных с ребром, в пары из строкового представления файла и числовой репрезентации прав доступа. Добавление этих свойств приведено на листинге~\ref{lst:props}.
-
-\begin{lstlisting}[float=H,caption={Добавление свойств для графа Software Heritage},label={lst:props}]
-StandardWebGraphPropertyProvider provider = new StandardWebGraphPropertyProvider();
-provider.setVertexLabeller(id -> graph.getNodeType(id).toString());
-provider.addVertexProperty(new FileVertexProperty<>("author_timestamp", Long.class, Path.of(path + ".property.author_timestamp.bin")));
-provider.addVertexProperty(new VertexProperty<>("swhid", graph::getSWHID));
-provider.addVertexProperty(new VertexProperty<>("message", nodeId -> {
-    try {
-        return graph.getProperties().getMessage(nodeId);
-    } catch (IOException e) {
-        throw new UncheckedIOException(e);
-    }
-}));
-ArcLabelEdgeProperty<DirEntry[]> edgeProperty = new ArcLabelEdgeProperty<>(graph.getForwardGraph().underlyingLabelledGraph());
-provider.addEdgeProperty(edgeProperty);
-provider.addEdgeProperty(new ArcLabelEdgeSubProperty<>("dir_entry_str", edgeProperty, SwhProperties::dirEntryStr));
-\end{lstlisting}
+Для добавления свойства ребра был использован класс \texttt{ArcLabelEdgeProperty}, не требующий никаких настроек, достаточно предоставить \texttt{ArcLabelledImmutableGraph}. Также было добавлено дополнительное свойство поверх свойства ребра, конвертирующее набор файлов, связанных с ребром, в пары из строкового представления файла и числовой репрезентации прав доступа. Добавление этих свойств приведено в приложении~\ref{lst:props}.
 
 \chapterconclusion
 
 В третьей главе были подробно рассмотрены детали реализации TinkerPop для WebGraph, а именно исполнитель Gremlin запросов, взаимодействие структурных методов, а также моделей свойств двух фреймворков. Были описаны подходы к работе со свойствами в WebGraph и рассказано, каким образом эти методы были реализованы в библиотеке. В конце был приведен пример практического использования библиотеки командой Software Heritage.
 
-\chapter{Проверка производительности библиотеки, связывающей WebGraph и TinkerPop}
+\chapter{Сравенение разработанной библиотеки, связывающей WebGraph и TinkerPop, и нативного подхода}
 
-Для проверки эффективности разработанной библиотеки был выбран реальный набор данных, в нем сформулированы представляющие интерес запросы. Эти запросы были реализованы на Gremlin, а также в нативном виде, после чего было проведено сравнение исполнения запросов по различным метрикам. В этой главе будет подробнее описан процесс тестирования и представлены его результаты.
+Для проверки эффективности разработанной библиотеки был выбран реальный набор данных, в нем сформулированы представляющие интерес запросы. Эти запросы были реализованы на Gremlin, а также в нативном виде, после чего было проведено сравнение исполнения запросов по различным метрикам. В этой главе будет подробнее описан процесс тестирования и представлены его результаты, а также описаны преимущества использования Gremlin перед нативным подходом к реалиазации запросов.
 
 \section{Набор данных}
 
@@ -939,9 +907,30 @@ g.V().not(in())
 \end{lstlisting}
 
 Проведенный анализ времени работы подтвердил полученные ранее результаты: замедление исполнения запроса в 4--5 раз по сравнению с нативной реализацией. Объем дополнительно затрачиваемой памяти сравним с размером помеченного графа в памяти, что означает двукратное ухудшение. При этом стоит отметить, что подобный запрос даже в нативном виде не является осуществимым на больших графах, так как обходит и сохраняет все вершины, поэтому в реальных случаях ухудшение в использовании памяти будет меньше.
+
+\section{Преимущества библиотеки перед нативными запросами}
+
+Использование Gremlin позволяет существенно сократить размер и сложность запроса, что уменьшает вероятность допустить ошибку при формулировке запроса, а также значительно повышает читаемость запроса для других пользователей. Для примера рассмотрим запрос, возвращающий все листья графа, то есть вершины, не имеющие исходящих ребер. Реализация этого запроса на Gremlin представлена на листинге~\ref{lst:gremlin-leaves}. В начале мы получаем все корни графа, затем рекурсивно переходим в потомка, избавляясь от повторений, после чего возвращаем встреченные листья.
+
+\begin{lstlisting}[float=!h,caption={Получение листьев графа на Gremlin},label={lst:gremlin-leaves}]
+g.V().not(in())
+ .repeat(out().dedup())
+ .until(not(out()))
+\end{lstlisting}
+
+Реализация этого же запроса в нативном виде представлена в приложении~\ref{lst:native-dfs} и требует значительно больше строк кода.
+
+Преимущество использования Gremlin также заметно в случае коротких запросов, так как при использовании нативного подхода зачастую необходим повторяющийся шаблонный код. Примером может служить получение значения свойства конкретного ребра. Реализация запроса на Gremlin представлена на листинге~\ref{lst:gremlin-edgeprop}, а его аналог в нативном виде представлен в приложении~\ref{lst:native-edgeprop}.
+
+\begin{lstlisting}[float=!h,caption={Получение свойства ребра на Gremlin},label={lst:gremlin-edgeprop}]
+g.E(LongLongImmutablePair.of(fromId, toId)).values()
+\end{lstlisting}
+
+Еще одним преимуществом Gremlin является поддержка запуска строковых запросов. Это позволяет, к примеру, создать веб-сервер, принимающий и исполняющий строковые запросы. С учетом удобства написания коротких запросов, такой веб-сервер позволяет очень быстро извлекать информацию из графа.
+
 \chapterconclusion
 
-В этой главе был описан метод проведения тестирования результатов. Был выбран набор данных, сформулированы запросы, и проведен анализ эффективности их исполнения, показывающий, что получая возможность исполнять Gremlin запросы в своей системе, пользователь столкнется с 4--5 кратным замедлением их исполнения.
+В этой главе был описан метод проведения тестирования результатов. Был выбран набор данных, сформулированы запросы, и проведен анализ эффективности их исполнения, показывающий, что получая возможность исполнять Gremlin запросы в своей системе, пользователь столкнется с 4--5 кратным замедлением их исполнения. Также были описаны преимущества, которые получает пользователь при использовании библиотеки.
 
 \startconclusionpage
 
@@ -956,5 +945,91 @@ g.V().not(in())
 Дальнейшее развитие проекта возможно в первую очередь в области оптимизаций связки фреймворков. Реализация ряда эвристик может снизить потерю в эффективности, тем самым сделав библиотеку еще более применимой на практике.
 
 \printmainbibliography
+
+\appendix
+
+\chapter{Исполнитель Gremlin запросов}\label{sec:app:eval}
+\begin{lstlisting}[float=!h,caption={Реализация исполнителя Gremlin запросов},label={lst:gremlin-eval}]
+public GraphTraversal<?, ?> eval(String query) {
+    Bindings bindings = new SimpleBindings();
+    bindings.put("g", g.traversal());
+    try (GremlinExecutor ge =
+                 GremlinExecutor.build()
+                                .globalBindings(bindings)
+                                .create()) {
+        return (GraphTraversal<?, ?>) ge.eval(query, bindings).get();
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+}
+\end{lstlisting}
+
+\chapter{Пример использования библиотеки для добавления свойств}\label{sec:app:swh-props}
+\begin{lstlisting}[float=!h,caption={Добавление свойств для графа Software Heritage},label={lst:props}]
+StandardWebGraphPropertyProvider provider = new StandardWebGraphPropertyProvider();
+provider.setVertexLabeller(id -> graph.getNodeType(id).toString());
+provider.addVertexProperty(new FileVertexProperty<>("author_timestamp", Long.class, Path.of(path + ".property.author_timestamp.bin")));
+provider.addVertexProperty(new VertexProperty<>("swhid", graph::getSWHID));
+provider.addVertexProperty(new VertexProperty<>("message", nodeId -> {
+    try {
+        return graph.getProperties().getMessage(nodeId);
+    } catch (IOException e) {
+        throw new UncheckedIOException(e);
+    }
+}));
+ArcLabelEdgeProperty<DirEntry[]> edgeProperty = new ArcLabelEdgeProperty<>(graph.getForwardGraph().underlyingLabelledGraph());
+provider.addEdgeProperty(edgeProperty);
+provider.addEdgeProperty(new ArcLabelEdgeSubProperty<>("dir_entry_str", edgeProperty, SwhProperties::dirEntryStr));
+\end{lstlisting}
+
+
+\chapter{Пример нативного запроса}\label{sec:app:native}
+\begin{lstlisting}[float=!h,caption={Получение листьев графа нативным способом},label={lst:native-dfs}]
+public Set<Long> leaves(SwhBidirectionalGraph g) {
+    NodeIterator nodes = g.nodeIterator();
+    Set<Long> roots = new HashSet<>();
+    while (nodes.hasNext()) {
+        long cur = nodes.nextLong();
+        if (g.predecessors(cur).nextLong() == -1) {
+            roots.add(cur);
+        }
+    }
+    Set<Long> leaves = new HashSet<>();
+    boolean[][] used = BooleanBigArrays.newBigArray(g.numNodes());
+    for (Long root : roots) {
+        dfs(root, used, leaves, g);
+    }
+    return leaves;
+}
+
+private void dfs(long root, boolean[][] used, Set<Long> leaves, BidirectionalImmutableGraph g) {
+    BigArrays.set(used, root, true);
+    LazyLongIterator successors = g.successors(root);
+    long child;
+    boolean hasChild = false;
+    while ((child = successors.nextLong()) != -1) {
+        hasChild = true;
+        if (!BigArrays.get(used, child)) {
+            dfs(child, used, leaves, g);
+        }
+    }
+    if (!hasChild) {
+        leaves.add(root);
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[float=!h,caption={Получение свойства ребра нативным способом},label={lst:native-edgeprop}]
+public Object edgeProperty(long fromId, long toId, SwhBidirectionalGraph g) {
+    ArcLabelledNodeIterator.LabelledArcIterator s = g.labelledSuccessors(fromId);
+    long succ;
+    while ((succ = s.nextLong()) != -1) {
+        if (succ == toId) {
+            return s.label().get();
+        }
+    }
+    return null;
+}
+\end{lstlisting}
 
 \end{document}
