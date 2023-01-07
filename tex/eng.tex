@@ -1,0 +1,121 @@
+\documentclass[times,specification,annotation,languages={russian,english}]{itmo-student-thesis}
+\linespread{1.5}
+%% Опции пакета:
+%% - specification - если есть, генерируется задание, иначе не генерируется
+%% - annotation - если есть, генерируется аннотация, иначе не генерируется
+%% - times - делает все шрифтом Times New Roman, собирается с помощью xelatex
+%% - languages={...} - устанавливает перечень используемых языков. По умолчанию это {english,russian}.
+%%                     Последний из языков определяет текст основного документа.
+
+%% Делает запятую в формулах более интеллектуальной, например:
+%% $1,5x$ будет читаться как полтора икса, а не один запятая пять иксов.
+%% Однако если написать $1, 5x$, то все будет как прежде.
+\usepackage{icomma}
+
+%% Один из пакетов, позволяющий делать таблицы на всю ширину текста.
+\usepackage{tabularx}
+
+%% Данные пакеты необязательны к использованию в бакалаврских/магистерских
+%% Они нужны для иллюстративных целей
+%% Начало
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{filecontents}
+\begin{filecontents}{bachelor-thesis.bib}
+
+\end{filecontents}
+%% Конец
+
+%% Указываем файл с библиографией.
+\addbibresource{bachelor-thesis.bib}
+
+\begin{document}
+
+%% Оглавление
+\tableofcontents
+
+%% Макрос для введения. Совместим со старым стилевиком.
+\startprefacepage
+Graphs, native vs DSL queries, graph compression for big graphs, no current solutinos, SWH use case.
+
+%% Начало содержательной части.
+\chapter{Review}
+\begin{enumerate}
+    \item Domain intro, terminology
+    \item What needs to be done, whats already done, why its not enough
+    \item Task
+    \item Conclusion
+\end{enumerate}
+Should contain the majority of citations and links. Further chapter should contain personal achievements.
+
+\section{Querying graph data}
+Graphs are useful, but native query implementations are cumbersome
+
+\section{Gremlin graph traversal language}
+Gremlin provides useful graph traversing abstractions
+
+\section{Graph database limitations}
+Gremlin is supported by graph DBs, but the are costly to scale
+
+\section{Graph compression}
+Instead of DBs one can use graph compression
+
+\section{WebGraph limitations}
+WebGraph has no Gremlin support, and limited property support. SWH use case.
+
+\section{Task}\label{sec:task}
+Implement TinkerPop, add easy property handling, analyse the performance
+
+\chapter{Proposed solution}
+\begin{enumerate}
+    \item Subtasks
+    \item Possible solutions
+    \item Chosen solutions justification
+\end{enumerate}
+
+\section{Implementing TinkerPop for WebGraph}
+Implement structural interfaces on top of WebGraph API.
+
+\section{Universal property handling}
+Tie WebGraph arc labels, and standard vertex props approaches to TinkerPop props.
+
+\section{Performance analysis}
+The bridge could introduce overhead. Choose a domain and a dataset, formulate queries, and profile them.
+
+\chapter{Implementation}
+\begin{enumerate}
+    \item Implementation - the chosen architecture, encountered problems
+    \item Comparison with existing solutions
+    \item Practical usage - adoption act, how the solution was used in the company
+\end{enumerate}
+The chapter may be split, e.g. the comparsion with exisitng solutions is often separated.
+
+\section{Implementing TinkerPop}
+Specific interfaces, wrapper objects, QueryExecutor.
+
+\section{Property handling}
+Provider interface, default implementations with value providers.
+Implemented standard approaches (vertex primitives, strings). Arc label abstraction, decomposition.
+
+\chapter{Solution analysis}
+
+\section{SWH}
+Domain, dataset.
+
+\section{Queries}
+Formulated queries, gremlin representation.
+
+\section{Benchmarker}
+Profiles queries on a random sample. Hot/cold timing, native comparison, CSV aggregation.
+
+\section{Test results}
+Graphs, what they show.
+
+\startconclusionpage
+Short summary, which tasks were completed, and which goals reached. Future development if needed.
+
+Library offering Gremlin support for any graph compressed WebGraph. Easy property handling, with standard approaches requiring minimal boilerplate.
+
+Tests showed this and that.
+
+\end{document}
